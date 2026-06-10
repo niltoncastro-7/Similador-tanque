@@ -1,79 +1,256 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Simulador de Tanque</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Simulador de Reservorio de Agua</title>
 
 <style>
 
 body{
+    margin:0;
+    font-family:'Segoe UI',sans-serif;
+    background:linear-gradient(135deg,#0f172a,#1e293b);
+    color:white;
     text-align:center;
-    font-family:Arial;
+}
+
+.container{
+    padding:20px;
+}
+
+h1{
+    color:#38bdf8;
+    text-shadow:0 0 15px #38bdf8;
+}
+
+.panel{
+    width:500px;
+    max-width:90%;
+    margin:auto;
+    padding:20px;
+    border-radius:20px;
+
+    background:rgba(255,255,255,0.08);
+    backdrop-filter:blur(8px);
+
+    box-shadow:0 0 20px rgba(0,0,0,0.5);
 }
 
 #tanque{
-    width:200px;
-    height:400px;
-    border:4px solid black;
-    margin:auto;
+    width:220px;
+    height:420px;
+    margin:20px auto;
+    border:5px solid #94a3b8;
+    border-radius:15px;
     position:relative;
+    overflow:hidden;
+    background:rgba(255,255,255,0.05);
 }
 
 #agua{
     position:absolute;
     bottom:0;
     width:100%;
-    height:50%;
-    background:skyblue;
+    height:0%;
+
+    background:
+    linear-gradient(
+    to top,
+    #0369a1,
+    #38bdf8,
+    #7dd3fc);
+
+    transition:height .3s;
+}
+
+.marca{
+    position:absolute;
+    width:100%;
+    border-top:1px dashed rgba(255,255,255,.3);
+}
+
+.m25{bottom:25%;}
+.m50{bottom:50%;}
+.m75{bottom:75%;}
+
+.info{
+    font-size:22px;
+    margin:10px;
+    font-weight:bold;
 }
 
 button{
-    margin:10px;
-    padding:10px 20px;
+    padding:12px 22px;
+    margin:8px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    font-size:15px;
+    font-weight:bold;
+    transition:.2s;
+}
+
+button:hover{
+    transform:translateY(-2px);
+}
+
+.btn-llenar{
+    background:linear-gradient(#22c55e,#15803d);
+    color:white;
+}
+
+.btn-vaciar{
+    background:linear-gradient(#ef4444,#991b1b);
+    color:white;
+}
+
+.btn-stop{
+    background:linear-gradient(#facc15,#ca8a04);
+    color:black;
+}
+
+#estado{
+    margin-top:15px;
+    font-size:20px;
+    font-weight:bold;
+}
+
+#alarma{
+    margin-top:10px;
+    font-size:20px;
+    font-weight:bold;
+}
+
+.led{
+    display:inline-block;
+    width:15px;
+    height:15px;
+    border-radius:50%;
+    margin-right:8px;
+    background:red;
+    box-shadow:0 0 10px red;
 }
 
 </style>
-
 </head>
+
 <body>
 
-<h1>Reservorio de Agua Potable</h1>
+<div class="container">
+
+<h1>💧 SISTEMA DE RESERVORIO DE AGUA POTABLE</h1>
+
+<div class="panel">
 
 <div id="tanque">
-    <div id="agua"></div>
+
+<div class="marca m25"></div>
+<div class="marca m50"></div>
+<div class="marca m75"></div>
+
+<div id="agua"></div>
+
 </div>
 
-<h2 id="nivel">50%</h2>
+<div class="info">
+Nivel: <span id="nivel">0</span> %
+</div>
 
-<button onclick="llenar()">Llenar</button>
-<button onclick="vaciar()">Vaciar</button>
+<button class="btn-llenar" onclick="iniciarLlenado()">
+🚰 Iniciar Llenado
+</button>
+
+<button class="btn-vaciar" onclick="iniciarVaciado()">
+⬇️ Iniciar Vaciado
+</button>
+
+<button class="btn-stop" onclick="detener()">
+⛔ Detener
+</button>
+
+<div id="estado">
+<span class="led" id="led"></span>
+Detenido
+</div>
+
+<div id="alarma"></div>
+
+</div>
+
+</div>
 
 <script>
 
-let nivel=50;
+let nivel = 0;
+let intervalo = null;
 
 function actualizar(){
-    document.getElementById("agua").style.height=nivel+"%";
-    document.getElementById("nivel").innerText=nivel+"%";
+
+document.getElementById("agua").style.height = nivel + "%";
+
+document.getElementById("nivel").innerText = nivel;
+
+let alarma = "";
+
+if(nivel >= 90){
+    alarma = "⚠️ ALARMA: NIVEL ALTO";
+}
+else if(nivel <= 10){
+    alarma = "⚠️ ALARMA: NIVEL BAJO";
 }
 
-function llenar(){
-
-    if(nivel<100){
-        nivel=nivel+10;
-        actualizar();
-    }
+document.getElementById("alarma").innerHTML = alarma;
 
 }
 
-function vaciar(){
+function iniciarLlenado(){
 
-    if(nivel>0){
-        nivel=nivel-10;
-        actualizar();
-    }
+clearInterval(intervalo);
+
+document.getElementById("estado").innerHTML =
+'<span class="led" style="background:lime;box-shadow:0 0 15px lime"></span> Llenando';
+
+intervalo = setInterval(()=>{
+
+if(nivel < 100){
+nivel++;
+actualizar();
+}
+
+},120);
 
 }
+
+function iniciarVaciado(){
+
+clearInterval(intervalo);
+
+document.getElementById("estado").innerHTML =
+'<span class="led" style="background:red;box-shadow:0 0 15px red"></span> Vaciando';
+
+intervalo = setInterval(()=>{
+
+if(nivel > 0){
+nivel--;
+actualizar();
+}
+
+},120);
+
+}
+
+function detener(){
+
+clearInterval(intervalo);
+
+document.getElementById("estado").innerHTML =
+'<span class="led" style="background:orange;box-shadow:0 0 15px orange"></span> Detenido';
+
+}
+
+actualizar();
 
 </script>
 
